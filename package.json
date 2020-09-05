@@ -37,7 +37,7 @@
     "cross-env": "^7.0.2"
   },
   "scripts": {
-    "start": "cross-env-shell APP=%npm_package_name% \"echo Starting server: %npm_package_name%... && node ./index.js",
+    "start": "node ./index.js",
     "serve": "cross-env-shell APP=%npm_package_name% \"echo Starting server (Hot Reload): %npm_package_name%... && nodemon ./index.js",
     "debug": "cross-env-shell DEBUG=%npm_package_name%:* NODE_ENV=development npm run serve",
     "dev": "cross-env NODE_ENV=development npm run serve",
