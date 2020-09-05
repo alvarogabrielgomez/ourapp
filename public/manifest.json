@@ -1,0 +1,14 @@
+{
+    "name": "OurApp Canada",
+    "description": "App que nos va a ayudar a llevar la economia de nosotros para llegar a Canada.",
+    "version": "1.0.0",
+    "manifest_version": 2,
+    "app": {
+        "background": {
+            "scripts": ["background.js"]
+        }
+    },
+    "icons": {
+        "192": "favicon/android-chrome-192x192.png"
+    }
+}
