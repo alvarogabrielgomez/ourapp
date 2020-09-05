@@ -1,0 +1,6 @@
+{
+    "name": "OwlApp",
+    "mail": {
+        "host": "prod-mail-server"
+    }
+}

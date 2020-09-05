@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width,initial-scale=1,minimal-ui" name="viewport">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic|Material+Icons">
+    <link rel="stylesheet" href="https://unpkg.com/vue-material/dist/vue-material.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/vue-material/dist/theme/default.css">
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+
+    <title></title>
+</head>
+
+<body>
+    <div id="app">
+        <md-app md-waterfall md-mode="overlap">
+            <md-app-toolbar class="md-primary md-large">
+                <div class="md-toolbar-row">
+                    <span class="md-title">Our App</span>
+                </div>
+            </md-app-toolbar>
+            </md-app-content>
+
+            <md-app-content class="content">
+                <div class="busyMsgContainer" v-if="busy">
+                    <md-progress-spinner md-mode="indeterminate"></md-progress-spinner>
+                </div>
+                <md-snackbar :md-position="snackBarPosition" :md-duration="snackbarDuration"
+                    :md-active.sync="showSnackbar" md-persistent>
+                    <span>{{snackbarMessage}}</span>
+                    <!-- <md-button class="md-primary" @click="showSnackbar = false">Retry</md-button> -->
+                </md-snackbar>
+                <div id="valorreales-container">
+                    <label style="font-size: 16px;"><b>Cual</b> fue el valor?</label>
+                    <currency-input class="input-beta" v-model="valorreales" currency="BRL" locale="pt-BR"
+                        auto-decimal-mode :allow-negative="false" />
+                </div>
+
+                <md-field class="description-container">
+                    <label for="description">Tipo de Compra</label>
+                    <md-select v-model="description" name="description" id="description" multiple>
+                        <md-option value="Otros">Otros</md-option>
+                        <md-option value="Supermercado">Supermercado</md-option>
+                        <md-option value="Panaderia">Panaderia</md-option>
+                        <md-option value="Farmacia">Farmacia</md-option>
+                        <md-option value="Ropa">Ropa</md-option>
+                        <md-option value="Chucherias">Chucherias</md-option>
+                        <md-option value="Servicios">Servicios</md-option>
+                    </md-select>
+                </md-field>
+
+                <md-field class="comment-container">
+                    <label>Comentario</label>
+                    <md-textarea v-model="comment"></md-textarea>
+                </md-field>
+
+                <md-button class="md-primary" v-on:click="submit">Guardar</md-button>
+                <md-button class="md-secondary" v-on:click="reset">Reset</md-button>
+
+
+        </md-app>
+    </div>
+</body>
+<script src="https://unpkg.com/vue"></script>
+<script src="https://unpkg.com/vue-material"></script>
+<script src="https://unpkg.com/vue"></script>
+<script src="https://unpkg.com/vue-currency-input"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+    Vue.use(VueMaterial.default)
+    new Vue({
+        el: '#app',
+        name: 'OurApp',
+        data: {
+            menuVisible: false,
+            valorreales: 0,
+            author: "Test",
+            description: [],
+            comment: "",
+            busy: false,
+            showSnackbar: false,
+            snackBarPosition: 'center',
+            snackbarMessage: "Test",
+            snackbarDuration: 4000
+        },
+        methods: {
+
+            reset() {
+                this.description = [];
+                this.valorreales = 0;
+                this.showSnackbar = false;
+                this.comment = "";
+            },
+
+            async submit() {
+                this.busy = true;
+                if (this.valorreales > 0 && description !== []) {
+                    const newPurchase = {
+                        "description": this.description,
+                        "author": this.author,
+                        "value": this.valorreales,
+                        "comment": this.comment
+                    }
+                    try {
+                        const sending = await this.send(newPurchase);
+                        if (sending) {
+                            this.reset();
+                            this.busy = false;
+                            this.snackbarDuration = 8000;
+                            this.snackbarMessage = "Listo!, guardado";
+                            this.showSnackbar = true;
+                            console.log("Success", sending);
+                        }
+                    } catch (err) {
+                        this.busy = false;
+                        this.snackbarDuration = 4000;
+                        this.snackbarMessage = err;
+                        this.showSnackbar = true;
+                        console.log("Error", err);
+                    }
+                } else {
+                    this.busy = false;
+                    this.snackbarDuration = 8000;
+                    this.snackbarMessage = "Tienes que poner una descripcion y un valor";
+                    this.showSnackbar = true;
+                }
+            },
+            send(newPurchase) {
+                return axios.post("/api/newPurchase", newPurchase)
+            }
+        }
+    })
+</script>
+<style>
+    .md-app {
+        height: 100vh;
+    }
+
+    .md-drawer {
+        width: 230px;
+        max-width: calc(100vw - 125px);
+    }
+
+    #valorreales {
+        max-width: 374px;
+        margin: auto;
+    }
+
+    #valorreales-container {
+        width: 100%;
+        padding: 11px 19px;
+    }
+
+    .input-beta {
+        outline: none;
+        border: none;
+        font-size: 34px;
+        width: 100%;
+        margin: 0;
+        left: 0;
+        margin-top: 12px;
+        margin-left: -3px;
+    }
+
+    .description-container {
+        width: calc(100% - 41px);
+        margin-top: 0px;
+        margin-bottom: 0px;
+        margin-left: 18px;
+    }
+
+    .comment-container {
+        width: calc(100% - 41px);
+        margin-top: 21px !important;
+        margin-bottom: 0px;
+        margin-left: 18px;
+    }
+
+    .busyMsgContainer {
+        position: absolute;
+        z-index: 10;
+        background: #fffffff0;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+
+</html>

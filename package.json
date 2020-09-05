@@ -1,0 +1,50 @@
+{
+  "name": "our-app",
+  "version": "1.0.0",
+  "description": "App que nos va a ayudar a llevar la economia de nosotros para llegar a Canada",
+  "main": "index.js",
+  "dependencies": {
+    "@doweb/vuexpress": "^1.1.3",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^8.1.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "config": "^3.3.1",
+    "css-loader": "^4.2.2",
+    "debug": "^4.1.1",
+    "ejs": "~2.5.5",
+    "express": "^4.17.1",
+    "express-handlebars": "^5.1.0",
+    "firebase": "^7.19.1",
+    "firebase-admin": "^9.1.1",
+    "helmet": "^3.23.3",
+    "joi": "^13.1.0",
+    "mini-css-extract-plugin": "^0.11.0",
+    "mongoose": "^5.10.3",
+    "node-sass": "^4.14.1",
+    "postcss-loader": "^3.0.0",
+    "pug": "^3.0.0",
+    "sass-loader": "^10.0.2",
+    "vue": "^2.6.12",
+    "vue-loader": "^15.9.3",
+    "vue-template-compiler": "^2.6.12",
+    "vuex": "^3.5.1",
+    "webpack": "^4.44.1",
+    "webpack-merge": "^5.1.3",
+    "webpack-node-externals": "^2.5.2"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.2"
+  },
+  "scripts": {
+    "start": "cross-env-shell APP=%npm_package_name% \"echo Starting server: %npm_package_name%... && node ./index.js",
+    "serve": "cross-env-shell APP=%npm_package_name% \"echo Starting server (Hot Reload): %npm_package_name%... && nodemon ./index.js",
+    "debug": "cross-env-shell DEBUG=%npm_package_name%:* NODE_ENV=development npm run serve",
+    "dev": "cross-env NODE_ENV=development npm run serve",
+    "prod": "cross-env NODE_ENV=production npm run start",
+    "prod-serve": "cross-env NODE_ENV=production npm run serve",
+    "test": "jest"
+  },
+  "author": "Alvaro Gabriel",
+  "license": "ISC"
+}
