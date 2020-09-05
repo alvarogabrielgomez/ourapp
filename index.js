@@ -6,7 +6,7 @@ const express = require('express');
 const index = require('./routes/index');
 
 var admin = require("firebase-admin");
-var serviceAccount = require("./firebase-credentials.json");
+//var serviceAccount = require("./firebase-credentials.json");
 admin.initializeApp({
     credential: admin.credential.cert({
         "type": process.env.FIREBASE_TYPE,
