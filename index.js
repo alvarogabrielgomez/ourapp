@@ -80,7 +80,7 @@ async function submitNewPurchase(description, author, value, comment) {
         comment: comment
     };
     try {
-        await db.collection('OurApp').doc('Purchases')
+        await db.collection('Purchases').doc()
             .set(newPurchase);
         console.log("Guardado en Firestore");
         return "Listo, guardado!";
