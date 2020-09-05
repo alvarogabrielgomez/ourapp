@@ -18,10 +18,14 @@
         <md-app md-waterfall md-mode="overlap">
             <md-app-toolbar class="md-primary md-large">
                 <div class="md-toolbar-row">
-                    <span class="md-title">Our App</span>
+                    <div style="display:flex; flex-direction:column; overflow: auto;padding: 18px 0px;">
+                        <span class="md-title">Lets fucking GO to Canada</span>
+
+                        <span class="md-subtitle">Hola <%= username %>!</span>
+                    </div>
                 </div>
             </md-app-toolbar>
-            </md-app-content>
+
 
             <md-app-content class="content">
                 <div class="busyMsgContainer" v-if="busy">
@@ -58,9 +62,10 @@
 
                 <md-button class="md-primary" v-on:click="submit">Guardar</md-button>
                 <md-button class="md-secondary" v-on:click="reset">Reset</md-button>
-
+            </md-app-content>
 
         </md-app>
+
     </div>
 </body>
 <script src="https://unpkg.com/vue"></script>
@@ -76,7 +81,7 @@
         data: {
             menuVisible: false,
             valorreales: 0,
-            author: "Test",
+            author: "<%= username %>",
             description: [],
             comment: "",
             busy: false,
@@ -178,6 +183,11 @@
         margin-left: 18px;
     }
 
+
+    .content {
+        margin-top: -101px !important;
+    }
+
     .busyMsgContainer {
         position: absolute;
         z-index: 10;
@@ -189,6 +199,18 @@
         display: flex;
         justify-content: center;
         align-items: center;
+    }
+
+    .md-subtitle {
+        margin: 0;
+        margin-left: 8px;
+        overflow: hidden;
+        font-weight: 400;
+        letter-spacing: .02em;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: top;
+        margin-top: 7px;
     }
 </style>
 
