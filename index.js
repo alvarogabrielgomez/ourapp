@@ -73,7 +73,7 @@ app.get('/api/authors', (req, res) => {
     })();
 });
 
-app.get('/api/typePurchase', (req, res) => {
+app.get('/api/typePurchases', (req, res) => {
     (async () => {
         try {
             let query = db.collection('TypePurchase');
@@ -90,7 +90,7 @@ app.get('/api/typePurchase', (req, res) => {
             });
             return res.status(200).send(response);
         } catch (err) {
-            console.log("Error /api/typePurchase", error);
+            console.log("Error /api/typePurchases", error);
             return res.status(500).send("Error al leer de la database");
         }
     })();
