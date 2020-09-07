@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const helmet = require('helmet');
 const Joi = require('joi');
 const express = require('express');
+const cors = require('cors');
 const index = require('./routes/index');
 
 var admin = require("firebase-admin");
@@ -20,7 +21,7 @@ admin.initializeApp({
         "auth_provider_x509_cert_url": process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
         "client_x509_cert_url": process.env.FIREBASE_CLIENT_X509_CERT_URL
     }),
-    // credential: admin.credential.cert(serviceAccount),
+    //credential: admin.credential.cert(serviceAccount),
     databaseURL: "https://ourapp-ec834.firebaseio.com"
 });
 const db = admin.firestore();
@@ -29,6 +30,9 @@ const {
     get
 } = require('config');
 const app = express();
+app.use(cors({
+    origin: true
+}));
 app.set('view engine', 'ejs');
 
 // console.log(`NODE_ENV IS ${process.env.NODE_ENV}`);
@@ -46,54 +50,59 @@ app.use(helmet()); // Sending various http headers
 app.use('/', index); // index
 // app.use('/api', api); // api shit
 
-app.get('/api/purchases'), (req, res) => {
-    var response = null;
-    db.collection('OurApp').doc('Purchases').get().then((doc) => {
-        if (!doc.exists) {
-            res.send(new Error("No existe"));
+app.get('/api/purchases', (req, res) => {
+    (async () => {
+        try {
+            let query = db.collection('Purchases');
+            let response = [];
+            await query.get().then(data => {
+                let docs = data.docs;
+                for (let doc of docs) {
+                    const selectedItem = {
+                        id: doc.id,
+                        description: doc.data().description,
+                        author: doc.data().author,
+                        value: doc.data().value,
+                        comment: doc.data().comment,
+                        date: doc.data().date
+                    };
+                    response.push(selectedItem);
+                }
+            });
+            return res.status(200).send(response);
+        } catch (err) {
+            console.log("Error /api/purchases", error);
+            return res.status(500).send("Error al leer de la database");
         }
-        res.send(doc);
-    }).catch((err) => {
-        res.send(new Error("Error al leer de firebase"));
-
-    });
-
-};
-
-app.post('/api/newPurchase', (req, res) => {
-    var response = null;
-    try {
-        response = submitNewPurchase(req.body.description, req.body.author, parseFloat(req.body.value), req.body.comment);
-    } catch (err) {
-        response = new Error(err.message);
-    }
-    res.send("Listo, guardado!");
+    })();
 });
 
-app.use(express.static('public'));
-
-
-async function submitNewPurchase(description, author, value, comment) {
+app.post('/api/newPurchase', (req, res) => {
     const newPurchase = {
-        description: description,
-        author: author,
-        value: value,
-        comment: comment
+        description: req.body.description,
+        author: req.body.author,
+        value: parseFloat(req.body.value),
+        comment: req.body.comment,
+        date: getDateNow()
     };
-    try {
-        await db.collection('Purchases').doc()
-            .set(newPurchase);
-        console.log("Guardado en Firestore");
-        return "Listo, guardado!";
+    (async () => {
+        try {
+            await db.collection('Purchases').doc()
+                .set(newPurchase);
+            return res.status(200).send("Listo, guardado!");
+        } catch (err) {
+            console.log("Error /api/newPurchase", error);
+            return res.status(500).send("Error al guardar");
+        }
+    })();
+});
 
-    } catch (err) {
-        return err.message;
-    }
-
+function getDateNow() {
+    var date = admin.firestore.Timestamp.fromDate(new Date());
+    return date;
 }
 
-
-
+app.use(express.static('public'));
 
 console.log("After");
 
