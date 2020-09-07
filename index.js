@@ -42,6 +42,28 @@ console.log(`Mail Server: ${config.get('mail.host')}`);
 // console.log(`Mail password: ${config.get('mail.password')}`);
 console.log(`App mode: ${app.get('env')}`);
 
+
+class RestResponse {
+    constructor(message, success, value) {
+        this.message = message,
+            this.success = success,
+            this.value = value
+    }
+    ok(valueok) {
+        return new RestResponse("", true, valueok);
+    }
+    okMessage(messageok, valueok) {
+        return new RestResponse(messageok, true, valueok);
+    }
+    badRequest(messagebadrequest) {
+        return new RestResponse(messagebadrequest, false);
+    }
+    serverError(messageServerError) {
+        return new RestResponse(messageServerError, false);
+    }
+}
+
+
 app.use(express.json());
 app.use(express.urlencoded({
     extended: true
@@ -54,7 +76,7 @@ app.get('/api/authors', (req, res) => {
     (async () => {
         try {
             let query = db.collection('Authors');
-            let response = [];
+            let authors = [];
             await query.get().then(data => {
                 let docs = data.docs;
                 for (let doc of docs) {
@@ -62,13 +84,13 @@ app.get('/api/authors', (req, res) => {
                         id: doc.id,
                         name: doc.data().name,
                     };
-                    response.push(selectedItem);
+                    authors.push(selectedItem);
                 }
             });
-            return res.status(200).send(response);
+            return res.status(200).send(new RestResponse().ok(authors));
         } catch (err) {
             console.log("Error /api/authors", error);
-            return res.status(500).send("Error al leer de la database");
+            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
         }
     })();
 });
@@ -77,7 +99,7 @@ app.get('/api/typePurchases', (req, res) => {
     (async () => {
         try {
             let query = db.collection('TypePurchase');
-            let response = [];
+            let typePurchases = [];
             await query.get().then(data => {
                 let docs = data.docs;
                 for (let doc of docs) {
@@ -85,13 +107,13 @@ app.get('/api/typePurchases', (req, res) => {
                         id: doc.id,
                         name: doc.data().name,
                     };
-                    response.push(selectedItem);
+                    typePurchases.push(selectedItem);
                 }
             });
-            return res.status(200).send(response);
+            return res.status(200).send(new RestResponse().ok(typePurchases));
         } catch (err) {
             console.log("Error /api/typePurchases", error);
-            return res.status(500).send("Error al leer de la database");
+            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
         }
     })();
 });
@@ -100,7 +122,7 @@ app.get('/api/purchases', (req, res) => {
     (async () => {
         try {
             let query = db.collection('Purchases');
-            let response = [];
+            let purchases = [];
             await query.get().then(data => {
                 let docs = data.docs;
                 for (let doc of docs) {
@@ -112,13 +134,13 @@ app.get('/api/purchases', (req, res) => {
                         types: doc.data().types,
                         date: doc.data().date
                     };
-                    response.push(selectedItem);
+                    purchases.push(selectedItem);
                 }
             });
-            return res.status(200).send(response);
+            return res.status(200).send(new RestResponse().ok(purchases));
         } catch (err) {
             console.log("Error /api/purchases", error);
-            return res.status(500).send("Error al leer de la database");
+            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
         }
     })();
 });
@@ -133,12 +155,12 @@ app.post('/api/newPurchase', (req, res) => {
     };
     (async () => {
         try {
-            await db.collection('Purchases').doc()
+            var newPurchaseResponse = await db.collection('Purchases').doc()
                 .set(newPurchase);
-            return res.status(200).send("Listo, guardado!");
+            return res.status(200).send(new RestResponse().okMessage("Listo, guardado!", newPurchaseResponse));
         } catch (err) {
             console.log("Error /api/newPurchase", error);
-            return res.status(500).send("Error al guardar");
+            return res.status(500).send(new RestResponse().serverError("Error al guardar"));
         }
     })();
 });
