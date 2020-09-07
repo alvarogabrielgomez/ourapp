@@ -157,7 +157,7 @@ app.post('/api/newPurchase', (req, res) => {
         try {
             var newPurchaseResponse = await db.collection('Purchases').doc()
                 .set(newPurchase);
-            return res.status(200).send(new RestResponse().okMessage("Listo, guardado!", newPurchaseResponse));
+            return res.status(200).send(new RestResponse().okMessage("Listo, guardado!", newPurchase));
         } catch (err) {
             console.log("Error /api/newPurchase", error);
             return res.status(500).send(new RestResponse().serverError("Error al guardar"));
