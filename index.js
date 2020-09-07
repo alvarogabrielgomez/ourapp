@@ -50,6 +50,52 @@ app.use(helmet()); // Sending various http headers
 app.use('/', index); // index
 // app.use('/api', api); // api shit
 
+app.get('/api/authors', (req, res) => {
+    (async () => {
+        try {
+            let query = db.collection('Authors');
+            let response = [];
+            await query.get().then(data => {
+                let docs = data.docs;
+                for (let doc of docs) {
+                    const selectedItem = {
+                        id: doc.id,
+                        name: doc.data().name,
+                    };
+                    response.push(selectedItem);
+                }
+            });
+            return res.status(200).send(response);
+        } catch (err) {
+            console.log("Error /api/authors", error);
+            return res.status(500).send("Error al leer de la database");
+        }
+    })();
+});
+
+app.get('/api/typePurchase', (req, res) => {
+    (async () => {
+        try {
+            let query = db.collection('TypePurchase');
+            let response = [];
+            await query.get().then(data => {
+                let docs = data.docs;
+                for (let doc of docs) {
+                    const selectedItem = {
+                        id: doc.id,
+                        name: doc.data().name,
+                    };
+                    response.push(selectedItem);
+                }
+            });
+            return res.status(200).send(response);
+        } catch (err) {
+            console.log("Error /api/typePurchase", error);
+            return res.status(500).send("Error al leer de la database");
+        }
+    })();
+});
+
 app.get('/api/purchases', (req, res) => {
     (async () => {
         try {
