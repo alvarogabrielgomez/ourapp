@@ -109,7 +109,7 @@ app.get('/api/purchases', (req, res) => {
                         description: doc.data().description,
                         author: doc.data().author,
                         value: doc.data().value,
-                        comment: doc.data().comment,
+                        types: doc.data().types,
                         date: doc.data().date
                     };
                     response.push(selectedItem);
@@ -125,10 +125,10 @@ app.get('/api/purchases', (req, res) => {
 
 app.post('/api/newPurchase', (req, res) => {
     const newPurchase = {
-        description: req.body.description,
+        types: req.body.types,
         author: req.body.author,
         value: parseFloat(req.body.value),
-        comment: req.body.comment,
+        description: req.body.description,
         date: getDateNow()
     };
     (async () => {
