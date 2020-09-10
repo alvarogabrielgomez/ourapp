@@ -121,7 +121,7 @@ app.get('/api/typePurchases', (req, res) => {
 app.get('/api/purchases', (req, res) => {
     (async () => {
         try {
-            let query = db.collection('Purchases');
+            let query = db.collection('Purchases').orderBy('date', 'desc');
             let purchases = [];
             await query.get().then(data => {
                 let docs = data.docs;
@@ -137,7 +137,6 @@ app.get('/api/purchases', (req, res) => {
                     purchases.push(selectedItem);
                 }
             });
-            purchases = purchases.orderBy('date');
             return res.status(200).send(new RestResponse().ok(purchases));
         } catch (err) {
             console.log("Error /api/purchases", error);
