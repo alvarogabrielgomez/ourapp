@@ -137,6 +137,7 @@ app.get('/api/purchases', (req, res) => {
                     purchases.push(selectedItem);
                 }
             });
+            purchases = purchases.orderBy('date');
             return res.status(200).send(new RestResponse().ok(purchases));
         } catch (err) {
             console.log("Error /api/purchases", error);
