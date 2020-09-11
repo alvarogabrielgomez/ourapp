@@ -135,6 +135,7 @@ app.get('/api/purchases', (req, res) => {
                         date: doc.data().date
                     };
                     purchases.push(selectedItem);
+                    //Test
                 }
             });
             return res.status(200).send(new RestResponse().ok(purchases));
