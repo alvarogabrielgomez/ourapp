@@ -191,7 +191,8 @@ app.get('/api/purchases', (req, res) => {
                         author: doc.data().author,
                         value: doc.data().value,
                         types: doc.data().types,
-                        date: doc.data().date
+                        date: doc.data().date,
+                        test: admin.firestore.Timestamp.toString(doc.data().date)
                     };
                     purchases.push(selectedItem);
                     //Test
@@ -229,12 +230,36 @@ app.delete('/api/purchases/:item_id', (req, res) => {
             return res.status(200).send(new RestResponse().ok("deleted"));
         } catch (error) {
             console.log("Error delete /api/purchases/:item_id", error);
-            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
+            return res.status(500).send(new RestResponse().serverError("Error al borrar de la database"));
         }
     })();
 });
 
-/////////// cuentasFijas
+// update item
+app.put('/api/purchases/:item_id', (req, res) => {
+    (async () => {
+        const putPurchase = {
+            types: req.body.types,
+            updateAuthor: req.body.author,
+            value: parseFloat(req.body.value),
+            description: req.body.description,
+            updateDate: getDateNow(),
+            date: admin.firestore.Timestamp.fromDate(new Date(req.body.date)),
+        };
+
+        try {
+            const document = db.collection('Purchases').doc(req.params.item_id);
+            await document.update(putPurchase);
+            return res.status(200).send(new RestResponse().ok("updated"));
+        } catch (error) {
+            console.log("Error update /api/purchases/:item_id", error);
+            return res.status(500).send(new RestResponse().serverError("Error al actualizar de la database"));
+        }
+    })();
+});
+
+
+//////////////////// cuentasFijas
 //new item
 app.post('/api/newCuentaFija', (req, res) => {
     const newCuentaFija = {
@@ -251,6 +276,28 @@ app.post('/api/newCuentaFija', (req, res) => {
         } catch (err) {
             console.log("Error /api/newCuentaFija", error);
             return res.status(500).send(new RestResponse().serverError("Error al guardar"));
+        }
+    })();
+});
+
+// update item
+app.put('/api/cuentasFijas/:item_id', (req, res) => {
+    (async () => {
+        const putCuentaFija = {
+            name: req.body.name,
+            description: req.body.description,
+            value: parseFloat(req.body.value),
+            date: admin.firestore.Timestamp.fromDate(new Date(req.body.date)),
+            updateDate: getDateNow()
+        };
+
+        try {
+            const document = db.collection('CuentasFijas').doc(req.params.item_id);
+            await document.update(putCuentaFija);
+            return res.status(200).send(new RestResponse().ok("updated"));
+        } catch (error) {
+            console.log("Error update /api/cuentasFijas/:item_id", error);
+            return res.status(500).send(new RestResponse().serverError("Error al actualizar de la database"));
         }
     })();
 });
@@ -312,6 +359,9 @@ app.delete('/api/cuentasFijas/:item_id', (req, res) => {
     })();
 });
 
+
+
+
 /////////////////  pagosCuentasFijas
 // new item
 app.post('/api/newPagoCuentaFija', (req, res) => {
@@ -328,6 +378,27 @@ app.post('/api/newPagoCuentaFija', (req, res) => {
         } catch (err) {
             console.log("Error /api/newPagoCuentaFija", error);
             return res.status(500).send(new RestResponse().serverError("Error al guardar"));
+        }
+    })();
+});
+
+// update item
+app.put('/api/pagosCuentasFijas/:item_id', (req, res) => {
+    (async () => {
+        const putPagoCuentaFija = {
+            idCuentaFija: req.body.idCuentaFija,
+            value: parseFloat(req.body.value),
+            date: admin.firestore.Timestamp.fromDate(new Date(req.body.date)),
+            updateDate: getDateNow()
+        };
+
+        try {
+            const document = db.collection('PagosCuentasFijas').doc(req.params.item_id);
+            await document.update(putPagoCuentaFija);
+            return res.status(200).send(new RestResponse().ok("updated"));
+        } catch (error) {
+            console.log("Error update /api/pagosCuentasFijas/:item_id", error);
+            return res.status(500).send(new RestResponse().serverError("Error al actualizar de la database"));
         }
     })();
 });
