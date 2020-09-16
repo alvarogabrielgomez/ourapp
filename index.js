@@ -118,34 +118,30 @@ app.get('/api/typePurchases', (req, res) => {
     })();
 });
 
-app.get('/api/purchases', (req, res) => {
+
+//////////////////purchases
+// new item
+app.post('/api/newPurchase', (req, res) => {
+    const newPurchase = {
+        types: req.body.types,
+        author: req.body.author,
+        value: parseFloat(req.body.value),
+        description: req.body.description,
+        date: getDateNow()
+    };
     (async () => {
         try {
-            let query = db.collection('Purchases').orderBy('date', 'desc');
-            let purchases = [];
-            await query.get().then(data => {
-                let docs = data.docs;
-                for (let doc of docs) {
-                    const selectedItem = {
-                        id: doc.id,
-                        description: doc.data().description,
-                        author: doc.data().author,
-                        value: doc.data().value,
-                        types: doc.data().types,
-                        date: doc.data().date
-                    };
-                    purchases.push(selectedItem);
-                    //Test
-                }
-            });
-            return res.status(200).send(new RestResponse().ok(purchases));
+            var newPurchaseResponse = await db.collection('Purchases').doc()
+                .set(newPurchase);
+            return res.status(200).send(new RestResponse().okMessage("Guardado con exito!", newPurchase));
         } catch (err) {
-            console.log("Error /api/purchases", error);
-            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
+            console.log("Error /api/newPurchase", error);
+            return res.status(500).send(new RestResponse().serverError("Error al guardar"));
         }
     })();
 });
 
+// read all items current month
 app.get('/api/purchasesCurrentMonth', (req, res) => {
     (async () => {
         try {
@@ -180,25 +176,219 @@ app.get('/api/purchasesCurrentMonth', (req, res) => {
     })();
 });
 
-app.post('/api/newPurchase', (req, res) => {
-    const newPurchase = {
-        types: req.body.types,
-        author: req.body.author,
-        value: parseFloat(req.body.value),
+// read all items 
+app.get('/api/purchases', (req, res) => {
+    (async () => {
+        try {
+            let query = db.collection('Purchases').orderBy('date', 'desc');
+            let purchases = [];
+            await query.get().then(data => {
+                let docs = data.docs;
+                for (let doc of docs) {
+                    const selectedItem = {
+                        id: doc.id,
+                        description: doc.data().description,
+                        author: doc.data().author,
+                        value: doc.data().value,
+                        types: doc.data().types,
+                        date: doc.data().date
+                    };
+                    purchases.push(selectedItem);
+                    //Test
+                }
+            });
+            return res.status(200).send(new RestResponse().ok(purchases));
+        } catch (err) {
+            console.log("Error /api/purchases", error);
+            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
+        }
+    })();
+});
+
+// read item
+app.get('/api/purchases/:item_id', (req, res) => {
+    (async () => {
+        try {
+            const document = db.collection('Purchases').doc(req.params.item_id);
+            let item = await document.get();
+            let response = item.data();
+            return res.status(200).send(new RestResponse().ok(response));
+        } catch (error) {
+            console.log("Error /api/purchases/:item_id", error);
+            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
+        }
+    })();
+});
+
+// delete item
+app.delete('/api/purchases/:item_id', (req, res) => {
+    (async () => {
+        try {
+            const document = db.collection('Purchases').doc(req.params.item_id);
+            await document.delete();
+            return res.status(200).send(new RestResponse().ok("deleted"));
+        } catch (error) {
+            console.log("Error delete /api/purchases/:item_id", error);
+            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
+        }
+    })();
+});
+
+/////////// cuentasFijas
+//new item
+app.post('/api/newCuentaFija', (req, res) => {
+    const newCuentaFija = {
+        name: req.body.name,
         description: req.body.description,
+        value: parseFloat(req.body.value),
         date: getDateNow()
     };
     (async () => {
         try {
-            var newPurchaseResponse = await db.collection('Purchases').doc()
-                .set(newPurchase);
-            return res.status(200).send(new RestResponse().okMessage("Guardado con exito!", newPurchase));
+            var newCuentaFija = await db.collection('CuentasFijas').doc()
+                .set(newCuentaFija);
+            return res.status(200).send(new RestResponse().okMessage("Guardado con exito!", newCuentaFija));
         } catch (err) {
-            console.log("Error /api/newPurchase", error);
+            console.log("Error /api/newCuentaFija", error);
             return res.status(500).send(new RestResponse().serverError("Error al guardar"));
         }
     })();
 });
+
+// read all items
+app.get('/api/cuentasFijas', (req, res) => {
+    (async () => {
+        try {
+            let query = db.collection('CuentasFijas').orderBy('date', 'desc');
+            let cuentasFijas = [];
+            await query.get().then(data => {
+                let docs = data.docs;
+                for (let doc of docs) {
+                    const selectedItem = {
+                        id: doc.id,
+                        name: doc.data().name,
+                        description: doc.data().description,
+                        value: doc.data().value,
+                        date: doc.data().date
+                    };
+                    cuentasFijas.push(selectedItem);
+                    //Test
+                }
+            });
+            return res.status(200).send(new RestResponse().ok(cuentasFijas));
+        } catch (err) {
+            console.log("Error /api/cuentasFijas", error);
+            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
+        }
+    })();
+});
+
+// read item
+app.get('/api/cuentasFijas/:item_id', (req, res) => {
+    (async () => {
+        try {
+            const document = db.collection('CuentasFijas').doc(req.params.item_id);
+            let item = await document.get();
+            let response = item.data();
+            return res.status(200).send(new RestResponse().ok(response));
+        } catch (error) {
+            console.log("Error /api/cuentasFijas/:item_id", error);
+            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
+        }
+    })();
+});
+
+// delete item
+app.delete('/api/cuentasFijas/:item_id', (req, res) => {
+    (async () => {
+        try {
+            const document = db.collection('CuentasFijas').doc(req.params.item_id);
+            await document.delete();
+            return res.status(200).send(new RestResponse().ok("deleted"));
+        } catch (error) {
+            console.log("Error delete /api/cuentasFijas/:item_id", error);
+            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
+        }
+    })();
+});
+
+/////////////////  pagosCuentasFijas
+// new item
+app.post('/api/newPagoCuentaFija', (req, res) => {
+    const newPagoCuentaFija = {
+        idCuentaFija: req.body.idCuentaFija,
+        value: parseFloat(req.body.value),
+        date: getDateNow()
+    };
+    (async () => {
+        try {
+            var newPagoCuentaFija = await db.collection('PagosCuentasFijas').doc()
+                .set(newPagoCuentaFija);
+            return res.status(200).send(new RestResponse().okMessage("Guardado con exito!", newPagoCuentaFija));
+        } catch (err) {
+            console.log("Error /api/newPagoCuentaFija", error);
+            return res.status(500).send(new RestResponse().serverError("Error al guardar"));
+        }
+    })();
+});
+
+// read all item
+app.get('/api/pagosCuentasFijas', (req, res) => {
+    (async () => {
+        try {
+            let query = db.collection('PagosCuentasFijas').orderBy('date', 'desc');
+            let pagosCuentasFijas = [];
+            await query.get().then(data => {
+                let docs = data.docs;
+                for (let doc of docs) {
+                    const selectedItem = {
+                        id: doc.id,
+                        name: doc.data().name,
+                        description: doc.data().description,
+                        value: doc.data().value,
+                        date: doc.data().date
+                    };
+                    pagosCuentasFijas.push(selectedItem);
+                    //Test
+                }
+            });
+            return res.status(200).send(new RestResponse().ok(pagosCuentasFijas));
+        } catch (err) {
+            console.log("Error /api/pagosCuentasFijas", error);
+            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
+        }
+    })();
+});
+
+// read item
+app.get('/api/pagosCuentasFijas/:item_id', (req, res) => {
+    (async () => {
+        try {
+            const document = db.collection('PagosCuentasFijas').doc(req.params.item_id);
+            let item = await document.get();
+            let response = item.data();
+            return res.status(200).send(new RestResponse().ok(response));
+        } catch (error) {
+            console.log("Error /api/pagosCuentasFijas/:item_id", error);
+            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
+        }
+    })();
+});
+
+// delete item
+app.delete('/api/pagosCuentasFijas/:item_id', (req, res) => {
+    (async () => {
+        try {
+            const document = db.collection('PagosCuentasFijas').doc(req.params.item_id);
+            await document.delete();
+            return res.status(200).send(new RestResponse().ok("deleted"));
+        } catch (error) {
+            console.log("Error delete /api/pagosCuentasFijas/:item_id", error);
+            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
+        }
+    })();
+});
+
 
 function getDateNow() {
     var date = admin.firestore.Timestamp.fromDate(new Date());
