@@ -152,10 +152,10 @@ app.get('/api/purchasesActualMonth', (req, res) => {
             let end = new Date(new Date.now);
             let start = end.setMonth(end.getMonth() - 1);
 
-            let query = db.collection('Purchases', ref => ref
+            let query = db.collection('Purchases')
                 .where("date", ">=", start)
                 .where("date", "<=", end)
-            ).orderBy('date', 'desc');
+                .orderBy('date', 'desc');
             let purchases = [];
             await query.get().then(data => {
                 let docs = data.docs;
