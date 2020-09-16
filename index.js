@@ -146,6 +146,40 @@ app.get('/api/purchases', (req, res) => {
     })();
 });
 
+app.get('/api/purchasesActualMonth', (req, res) => {
+    (async () => {
+        try {
+            let end = new Date(new Date.now);
+            let start = end.setMonth(end.getMonth() - 1);
+
+            let query = db.collection('Purchases', ref => ref
+                .where("date", ">", start)
+                .where("date", "<", end)
+            ).orderBy('date', 'desc');
+            let purchases = [];
+            await query.get().then(data => {
+                let docs = data.docs;
+                for (let doc of docs) {
+                    const selectedItem = {
+                        id: doc.id,
+                        description: doc.data().description,
+                        author: doc.data().author,
+                        value: doc.data().value,
+                        types: doc.data().types,
+                        date: doc.data().date
+                    };
+                    purchases.push(selectedItem);
+                    //Test
+                }
+            });
+            return res.status(200).send(new RestResponse().ok(purchases));
+        } catch (err) {
+            console.log("Error /api/purchasesActualMonth", error);
+            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
+        }
+    })();
+});
+
 app.post('/api/newPurchase', (req, res) => {
     const newPurchase = {
         types: req.body.types,
