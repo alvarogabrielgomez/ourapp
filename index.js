@@ -155,18 +155,19 @@ app.get('/api/purchasesCurrentMonth', (req, res) => {
             let purchases = [];
             await query.get().then(data => {
                 let docs = data.docs;
-                for (let doc of docs) {
+                docs.forEach(doc => {
+                    var time = doc.data().date;
+                    var date = time.toDate();
                     const selectedItem = {
                         id: doc.id,
                         description: doc.data().description,
                         author: doc.data().author,
                         value: doc.data().value,
                         types: doc.data().types,
-                        date: doc.data().date
+                        date: date,
                     };
                     purchases.push(selectedItem);
-                    //Test
-                }
+                });
             });
             return res.status(200).send(new RestResponse().ok(purchases));
         } catch (err) {
@@ -184,19 +185,19 @@ app.get('/api/purchases', (req, res) => {
             let purchases = [];
             await query.get().then(data => {
                 let docs = data.docs;
-                for (let doc of docs) {
+                docs.forEach(doc => {
+                    var time = doc.data().date;
+                    var date = time.toDate();
                     const selectedItem = {
                         id: doc.id,
                         description: doc.data().description,
                         author: doc.data().author,
                         value: doc.data().value,
                         types: doc.data().types,
-                        date: doc.data().date,
-                        test: admin.firestore.Timestamp.toString(doc.data().date)
+                        date: date,
                     };
                     purchases.push(selectedItem);
-                    //Test
-                }
+                });
             });
             return res.status(200).send(new RestResponse().ok(purchases));
         } catch (err) {
@@ -211,9 +212,18 @@ app.get('/api/purchases/:item_id', (req, res) => {
     (async () => {
         try {
             const document = db.collection('Purchases').doc(req.params.item_id);
-            let item = await document.get();
-            let response = item.data();
-            return res.status(200).send(new RestResponse().ok(response));
+            let doc = await document.get();
+            var time = doc.data().date;
+            var date = time.toDate();
+            const selectedItem = {
+                id: doc.id,
+                description: doc.data().description,
+                author: doc.data().author,
+                value: doc.data().value,
+                types: doc.data().types,
+                date: date,
+            };
+            return res.status(200).send(new RestResponse().ok(selectedItem));
         } catch (error) {
             console.log("Error /api/purchases/:item_id", error);
             return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
@@ -310,17 +320,18 @@ app.get('/api/cuentasFijas', (req, res) => {
             let cuentasFijas = [];
             await query.get().then(data => {
                 let docs = data.docs;
-                for (let doc of docs) {
+                docs.forEach(doc => {
+                    var time = doc.data().date;
+                    var date = time.toDate();
                     const selectedItem = {
                         id: doc.id,
                         name: doc.data().name,
                         description: doc.data().description,
                         value: doc.data().value,
-                        date: doc.data().date
+                        date: date,
                     };
                     cuentasFijas.push(selectedItem);
-                    //Test
-                }
+                });
             });
             return res.status(200).send(new RestResponse().ok(cuentasFijas));
         } catch (err) {
@@ -335,9 +346,17 @@ app.get('/api/cuentasFijas/:item_id', (req, res) => {
     (async () => {
         try {
             const document = db.collection('CuentasFijas').doc(req.params.item_id);
-            let item = await document.get();
-            let response = item.data();
-            return res.status(200).send(new RestResponse().ok(response));
+            let doc = await document.get();
+            var time = doc.data().date;
+            var date = time.toDate();
+            const selectedItem = {
+                id: doc.id,
+                name: doc.data().name,
+                description: doc.data().description,
+                value: doc.data().value,
+                date: date,
+            };
+            return res.status(200).send(new RestResponse().ok(selectedItem));
         } catch (error) {
             console.log("Error /api/cuentasFijas/:item_id", error);
             return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
@@ -411,17 +430,17 @@ app.get('/api/pagosCuentasFijas', (req, res) => {
             let pagosCuentasFijas = [];
             await query.get().then(data => {
                 let docs = data.docs;
-                for (let doc of docs) {
+                docs.forEach(doc => {
+                    var time = doc.data().date;
+                    var date = time.toDate();
                     const selectedItem = {
                         id: doc.id,
-                        name: doc.data().name,
-                        description: doc.data().description,
+                        idCuentaFija: doc.data().idCuentaFija,
                         value: doc.data().value,
-                        date: doc.data().date
+                        date: date,
                     };
                     pagosCuentasFijas.push(selectedItem);
-                    //Test
-                }
+                });
             });
             return res.status(200).send(new RestResponse().ok(pagosCuentasFijas));
         } catch (err) {
@@ -436,9 +455,17 @@ app.get('/api/pagosCuentasFijas/:item_id', (req, res) => {
     (async () => {
         try {
             const document = db.collection('PagosCuentasFijas').doc(req.params.item_id);
-            let item = await document.get();
-            let response = item.data();
-            return res.status(200).send(new RestResponse().ok(response));
+            let doc = await document.get();
+
+            var time = doc.data().date;
+            var date = time.toDate();
+            const selectedItem = {
+                id: doc.id,
+                idCuentaFija: doc.data().idCuentaFija,
+                value: doc.data().value,
+                date: date,
+            };
+            return res.status(200).send(new RestResponse().ok(selectedItem));
         } catch (error) {
             console.log("Error /api/pagosCuentasFijas/:item_id", error);
             return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
