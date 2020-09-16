@@ -7,7 +7,7 @@ const cors = require('cors');
 const index = require('./routes/index');
 
 var admin = require("firebase-admin");
-//var serviceAccount = require("./firebase-credentials.json");
+// var serviceAccount = require("./firebase-credentials.json");
 admin.initializeApp({
     credential: admin.credential.cert({
         "type": process.env.FIREBASE_TYPE,
@@ -21,7 +21,7 @@ admin.initializeApp({
         "auth_provider_x509_cert_url": process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
         "client_x509_cert_url": process.env.FIREBASE_CLIENT_X509_CERT_URL
     }),
-    //credential: admin.credential.cert(serviceAccount),
+    // credential: admin.credential.cert(serviceAccount),
     databaseURL: "https://ourapp-ec834.firebaseio.com"
 });
 const db = admin.firestore();
@@ -146,15 +146,15 @@ app.get('/api/purchases', (req, res) => {
     })();
 });
 
-app.get('/api/purchasesActualMonth', (req, res) => {
+app.get('/api/purchasesCurrentMonth', (req, res) => {
     (async () => {
         try {
-            let end = new Date(new Date.now);
-            let start = end.setMonth(end.getMonth() - 1);
+            let now = Date.now();
+            now = new Date(now);
+            let currentMonth = new Date(now.getFullYear(), now.getMonth() - 1, 0);
 
             let query = db.collection('Purchases')
-                .where("date", ">=", start)
-                .where("date", "<=", end)
+                .where("date", ">", currentMonth)
                 .orderBy('date', 'desc');
             let purchases = [];
             await query.get().then(data => {
@@ -174,7 +174,7 @@ app.get('/api/purchasesActualMonth', (req, res) => {
             });
             return res.status(200).send(new RestResponse().ok(purchases));
         } catch (err) {
-            console.log("Error /api/purchasesActualMonth", error);
+            console.log("Error /api/purchasesCurrentMonth", err);
             return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
         }
     })();
