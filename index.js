@@ -280,7 +280,7 @@ app.post('/api/newCuentaFija', (req, res) => {
     };
     (async () => {
         try {
-            var newCuentaFija = await db.collection('CuentasFijas').doc()
+            var newCuentaFijaResponse = await db.collection('CuentasFijas').doc()
                 .set(newCuentaFija);
             return res.status(200).send(new RestResponse().okMessage("Guardado con exito!", newCuentaFija));
         } catch (err) {
