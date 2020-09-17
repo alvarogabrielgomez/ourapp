@@ -278,7 +278,7 @@ app.post('/api/newCuentaFija', (req, res) => {
         value: parseFloat(req.body.value),
         date: getDateNow()
     };
-    if (req.body.id) newCuentaFija.id = req.body.id;
+    if (req.body.id && req.body.id != "") newCuentaFija.id = req.body.id;
 
     (async () => {
         try {
