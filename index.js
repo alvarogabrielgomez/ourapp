@@ -420,12 +420,16 @@ app.get('/api/cuentasFijas', (req, res) => {
                 docs.forEach(doc => {
                     var time = doc.data().date;
                     var date = time.toDate();
+                    var timeUpdate = doc.data().updateDate;
+                    var updateDate = timeUpdate.toDate();
                     const selectedItem = {
                         id: doc.id,
                         name: doc.data().name,
                         description: doc.data().description,
                         value: doc.data().value,
+                        increment: doc.data().increment,
                         date: date,
+                        updateDate: updateDate,
                     };
                     cuentasFijas.push(selectedItem);
                 });
@@ -446,12 +450,16 @@ app.get('/api/cuentasFijas/:item_id', (req, res) => {
             let doc = await CuentaFija.fetch(db, req.params.item_id);
             var time = doc.data().date;
             var date = time.toDate();
+            var timeUpdate = doc.data().updateDate;
+            var updateDate = timeUpdate.toDate();
             const selectedItem = {
                 id: doc.id,
                 name: doc.data().name,
                 description: doc.data().description,
                 value: doc.data().value,
+                increment: doc.data().increment,
                 date: date,
+                updateDate: updateDate,
             };
             return res.status(200).send(new RestResponse().ok(selectedItem));
         } catch (error) {
