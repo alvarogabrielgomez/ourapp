@@ -204,6 +204,8 @@ app.get('/api/v2/purchasesCurrentMonth', (req, res) => {
                 docs.forEach(doc => {
                     var time = doc.data().date;
                     var date = time.toDate();
+                    var timeUpdate = doc.data().updateDate;
+                    var updateDate = timeUpdate ? timeUpdate.toDate() : date;
                     const selectedItem = {
                         id: doc.id,
                         description: doc.data().description,
@@ -211,6 +213,7 @@ app.get('/api/v2/purchasesCurrentMonth', (req, res) => {
                         value: doc.data().value,
                         types: doc.data().types,
                         date: date,
+                        updateDate: updateDate
                     };
                     purchases.push(selectedItem);
                 });
