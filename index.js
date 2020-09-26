@@ -576,6 +576,41 @@ app.get('/api/pagosCuentasFijas', (req, res) => {
     })();
 });
 
+// read all where idCuentaFija
+app.get('/api/pagosCuentasFijas/cuentaFija/:id_cuenta_fija', (req, res) => {
+    (async () => {
+        try {
+            let query = db.collection('PagosCuentasFijas').where("idCuentaFija", "==", req.params.id_cuenta_fija).orderBy('date', 'desc');
+            let pagosCuentasFijas = [];
+            await query.get().then(data => {
+                let docs = data.docs;
+                docs.forEach(doc => {
+                    var time = doc.data().date;
+                    var date = time.toDate();
+
+                    var timeUpdate = doc.data().updateDate;
+                    var updateDate = timeUpdate.toDate();
+
+                    const selectedItem = {
+                        id: doc.id,
+                        idCuentaFija: doc.data().idCuentaFija,
+                        value: doc.data().value,
+                        increment: doc.data().increment,
+                        date: date,
+                        updateDate: updateDate,
+                    };
+                    pagosCuentasFijas.push(selectedItem);
+                });
+            });
+            return res.status(200).send(new RestResponse().ok(pagosCuentasFijas));
+        } catch (err) {
+            console.log("Error /api/pagosCuentasFijas", error);
+            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
+        }
+    })();
+});
+
+
 // read item
 app.get('/api/pagosCuentasFijas/:item_id', (req, res) => {
     (async () => {
