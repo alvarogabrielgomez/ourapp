@@ -432,6 +432,7 @@ app.get('/api/cuentasFijas', (req, res) => {
                         description: doc.data().description,
                         value: doc.data().value,
                         increment: doc.data().increment,
+                        dayOfPayment: doc.data().dayOfPayment,
                         date: date,
                         updateDate: updateDate,
                     };
@@ -462,6 +463,7 @@ app.get('/api/cuentasFijas/:item_id', (req, res) => {
                 description: doc.data().description,
                 value: doc.data().value,
                 increment: doc.data().increment,
+                dayOfPayment: doc.data().dayOfPayment,
                 date: date,
                 updateDate: updateDate,
             };
