@@ -365,7 +365,7 @@ app.post('/api/newCuentaFija', (req, res) => {
             req.body.description,
             req.body.value,
             incrementValues,
-            dateNow,
+            admin.firestore.Timestamp.fromDate(new Date(req.body.date)),
             dateNow,
         );
         if (req.body.id && req.body.id != "") newCuentaFija.id = req.body.id;
