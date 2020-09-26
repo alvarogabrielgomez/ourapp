@@ -1,10 +1,11 @@
 class CuentaFija {
-    constructor(id, name, description, value, increment, date, updateDate) {
+    constructor(id, name, description, value, increment, dayOfPayment, date, updateDate) {
         this.id = id,
             this.name = name,
             this.description = description,
             this.value = value,
             this.increment = increment,
+            this.dayOfPayment = dayOfPayment,
             this.date = date,
             this.updateDate = updateDate
     }
@@ -15,6 +16,7 @@ class CuentaFija {
             description: this.description,
             value: parseFloat(this.value),
             increment: this.increment,
+            dayOfPayment: this.dayOfPayment,
             date: this.date,
             updateDate: this.updateDate,
         }
