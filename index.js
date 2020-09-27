@@ -500,12 +500,13 @@ app.post('/api/newPagoCuentaFija', (req, res) => {
         try {
             var incrementValues = await getIncrementValueOfCuentasFijas(req.body.idCuentaFija, req.body.value);
             const dateNow = getDateNow();
+            const datePago = admin.firestore.Timestamp.fromDate(new Date(req.body.date));
             var newPagoCuentaFija = new PagoCuentaFija(
                 null,
                 req.body.idCuentaFija,
                 req.body.value,
                 incrementValues,
-                dateNow, // date
+                datePago, // date pago
                 dateNow // update date
             );
             await newPagoCuentaFija.create(db);
