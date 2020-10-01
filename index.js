@@ -191,7 +191,7 @@ app.get('/api/v2/purchasesCurrentMonth', (req, res) => {
         try {
             let now = Date.now();
             now = new Date(now);
-            let currentMonth = new Date(now.getFullYear(), now.getMonth() - 1, 0);
+            let currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
             let query = db.collection('Purchases')
                 .where("date", ">", currentMonth)
@@ -371,18 +371,18 @@ app.post('/api/newCuentaFija', (req, res) => {
         );
         if (req.body.id && req.body.id != "") newCuentaFija.id = req.body.id;
 
-        var newPagoCuentaFija = new PagoCuentaFija(
-            null,
-            "idcuentafija",
-            req.body.value,
-            incrementValues,
-            dateNow,
-            dateNow,
-        );
+        // var newPagoCuentaFija = new PagoCuentaFija(
+        //     null,
+        //     "idcuentafija",
+        //     req.body.value,
+        //     incrementValues,
+        //     dateNow,
+        //     dateNow,
+        // );
         try {
             var newCuentaFijaResponse = await newCuentaFija.create(db);
-            newPagoCuentaFija.idCuentaFija = newCuentaFijaResponse.id;
-            await newPagoCuentaFija.create(db);
+            // newPagoCuentaFija.idCuentaFija = newCuentaFijaResponse.id;
+            // await newPagoCuentaFija.create(db);
             return res.status(200).send(new RestResponse().okMessage("Guardado con exito!"));
         } catch (err) {
             console.log("Error /api/newCuentaFija", err);
