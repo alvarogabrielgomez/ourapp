@@ -1,33 +1,34 @@
 const config = require('config');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
-const Joi = require('joi');
 const express = require('express');
 const cors = require('cors');
-const index = require('./routes/index');
 var CuentaFija = require('./models/CuentaFija');
 var PagoCuentaFija = require('./models/PagoCuentaFija');
 
+var firebaseInstances = {};
 var admin = require("firebase-admin");
-// var serviceAccount = require("./firebase-credentials.json");
+var serviceAccount = require("./firebase-credentials.json");
 admin.initializeApp({
-    credential: admin.credential.cert({
-        "type": process.env.FIREBASE_TYPE,
-        "project_id": process.env.FIREBASE_PROJECT_ID,
-        "private_key_id": process.env.FIREBASE_PRIVATE_KEY_ID,
-        "private_key": process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-        "client_email": process.env.FIREBASE_CLIENT_EMAIL,
-        "client_id": process.env.FIREBASE_CLIENT_ID,
-        "auth_uri": process.env.FIREBASE_AUTH_URI,
-        "token_uri": process.env.FIREBASE_TOKEN_URI,
-        "auth_provider_x509_cert_url": process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
-        "client_x509_cert_url": process.env.FIREBASE_CLIENT_X509_CERT_URL
-    }),
-    // credential: admin.credential.cert(serviceAccount),
+    // credential: admin.credential.cert({
+    //     "type": process.env.FIREBASE_TYPE,
+    //     "project_id": process.env.FIREBASE_PROJECT_ID,
+    //     "private_key_id": process.env.FIREBASE_PRIVATE_KEY_ID,
+    //     "private_key": process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    //     "client_email": process.env.FIREBASE_CLIENT_EMAIL,
+    //     "client_id": process.env.FIREBASE_CLIENT_ID,
+    //     "auth_uri": process.env.FIREBASE_AUTH_URI,
+    //     "token_uri": process.env.FIREBASE_TOKEN_URI,
+    //     "auth_provider_x509_cert_url": process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
+    //     "client_x509_cert_url": process.env.FIREBASE_CLIENT_X509_CERT_URL
+    // }),
+    credential: admin.credential.cert(serviceAccount),
     databaseURL: "https://ourapp-ec834.firebaseio.com"
 });
 const db = admin.firestore();
 
+firebaseInstances.db = db;
+firebaseInstances.admin = admin;
 const {
     get
 } = require('config');
@@ -67,15 +68,16 @@ class RestResponse {
         return new RestResponse(messageServerError, false);
     }
 }
-
-
 app.use(express.json());
 app.use(express.urlencoded({
     extended: true
 }));
 app.use(helmet()); // Sending various http headers
-app.use('/', index); // index
-// app.use('/api', api); // api shit
+
+/////Routing
+// API VERSION 1
+require('./routes/v1/index.routes.js')(app, firebaseInstances);
+
 
 app.get('/api/authors', (req, res) => {
     (async () => {
@@ -124,272 +126,6 @@ app.get('/api/typePurchases', (req, res) => {
 });
 
 
-//////////////////purchases
-// new item
-app.post('/api/newPurchase', (req, res) => {
-    const newPurchase = {
-        types: req.body.types,
-        author: req.body.author,
-        value: parseFloat(req.body.value),
-        description: req.body.description,
-        date: getDateNow()
-    };
-    (async () => {
-        try {
-            var newPurchaseResponse = await db.collection('Purchases').doc()
-                .set(newPurchase);
-            return res.status(200).send(new RestResponse().okMessage("Guardado con exito!", newPurchase));
-        } catch (err) {
-            console.log("Error /api/newPurchase", error);
-            return res.status(500).send(new RestResponse().serverError("Error al guardar"));
-        }
-    })();
-});
-
-// read all items current month
-
-app.get('/api/purchasesCurrentMonth', (req, res) => {
-    (async () => {
-        try {
-            let now = Date.now();
-            now = new Date(now);
-            let currentMonth = new Date(now.getFullYear(), now.getMonth() - 1, 0);
-
-            let query = db.collection('Purchases')
-                .where("date", ">", currentMonth)
-                .orderBy('date', 'desc');
-            let purchases = [];
-
-            await query.get().then(data => {
-                let docs = data.docs;
-                docs.forEach(doc => {
-                    var time = doc.data().date;
-                    var date = time.toDate();
-                    const selectedItem = {
-                        id: doc.id,
-                        description: doc.data().description,
-                        author: doc.data().author,
-                        value: doc.data().value,
-                        types: doc.data().types,
-                        date: date,
-                    };
-                    purchases.push(selectedItem);
-                });
-            });
-
-            return res.status(200).send(new RestResponse().ok(purchases));
-        } catch (err) {
-            console.log("Error /api/purchasesCurrentMonth", err);
-            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
-        }
-    })();
-});
-
-
-app.get('/api/v2/purchasesCurrentMonth', (req, res) => {
-    (async () => {
-        try {
-            let now = Date.now();
-            now = new Date(now);
-            let currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-            let query = db.collection('Purchases')
-                .where("date", ">", currentMonth)
-                .orderBy('date', 'desc');
-            let purchases = [];
-            let valorTotalCompras = 0.00;
-            let valorTotalSupermercado = 0.00;
-            await query.get().then(data => {
-                let docs = data.docs;
-                docs.forEach(doc => {
-                    var time = doc.data().date;
-                    var date = time.toDate();
-                    var timeUpdate = doc.data().updateDate;
-                    var updateDate = timeUpdate ? timeUpdate.toDate() : date;
-                    const selectedItem = {
-                        id: doc.id,
-                        description: doc.data().description,
-                        author: doc.data().author,
-                        value: doc.data().value,
-                        types: doc.data().types,
-                        date: date,
-                        updateDate: updateDate
-                    };
-                    purchases.push(selectedItem);
-                });
-            });
-
-            purchases.forEach(x => {
-                if (x.types.includes("Supermercado")) {
-                    valorTotalSupermercado += parseFloat(x.value);
-                } else {
-                    valorTotalCompras += parseFloat(x.value);
-                }
-            })
-
-            const responsePurchase = {
-                purchases: purchases,
-                valorTotalCompras: parseFloat(valorTotalCompras.toFixed(2)),
-                valorTotalSupermercado: parseFloat(valorTotalSupermercado.toFixed(2)),
-            };
-            return res.status(200).send(new RestResponse().ok(responsePurchase));
-        } catch (err) {
-            console.log("Error /api/purchasesCurrentMonth", err);
-            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
-        }
-    })();
-});
-
-// read all items 
-app.get('/api/purchases', (req, res) => {
-    (async () => {
-        try {
-            let query = db.collection('Purchases').orderBy('date', 'desc');
-            let purchases = [];
-            let valorTotalCompras = 0.00;
-            let valorTotalSupermercado = 0.00;
-            await query.get().then(data => {
-                let docs = data.docs;
-
-                docs.forEach(doc => {
-                    var time = doc.data().date;
-                    var date = time.toDate();
-                    const selectedItem = {
-                        id: doc.id,
-                        description: doc.data().description,
-                        author: doc.data().author,
-                        value: doc.data().value,
-                        types: doc.data().types,
-                        date: date,
-                    };
-                    purchases.push(selectedItem);
-                });
-            });
-
-            purchases.forEach(x => {
-                if (x.types.includes("Supermercado")) {
-                    valorTotalSupermercado += parseFloat(x.value);
-                } else {
-                    valorTotalCompras += parseFloat(x.value);
-                }
-            })
-
-            const responsePurchase = {
-                purchases: purchases,
-                valorTotalCompras: parseFloat(valorTotalCompras.toFixed(2)),
-                valorTotalSupermercado: parseFloat(valorTotalSupermercado.toFixed(2)),
-            };
-
-            return res.status(200).send(new RestResponse().ok(responsePurchase));
-        } catch (err) {
-            console.log("Error /api/purchases", error);
-            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
-        }
-    })();
-});
-
-// read item
-app.get('/api/purchases/:item_id', (req, res) => {
-    (async () => {
-        try {
-            const document = db.collection('Purchases').doc(req.params.item_id);
-            let doc = await document.get();
-            var time = doc.data().date;
-            var date = time.toDate();
-            const selectedItem = {
-                id: doc.id,
-                description: doc.data().description,
-                author: doc.data().author,
-                value: doc.data().value,
-                types: doc.data().types,
-                date: date,
-            };
-            return res.status(200).send(new RestResponse().ok(selectedItem));
-        } catch (error) {
-            console.log("Error /api/purchases/:item_id", error);
-            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
-        }
-    })();
-});
-
-// delete item
-app.delete('/api/purchases/:item_id', (req, res) => {
-    (async () => {
-        try {
-            const document = db.collection('Purchases').doc(req.params.item_id);
-            await document.delete();
-            return res.status(200).send(new RestResponse().ok("deleted"));
-        } catch (error) {
-            console.log("Error delete /api/purchases/:item_id", error);
-            return res.status(500).send(new RestResponse().serverError("Error al borrar de la database"));
-        }
-    })();
-});
-
-// update item
-app.put('/api/purchases/:item_id', (req, res) => {
-    (async () => {
-        const putPurchase = {
-            types: req.body.types,
-            updateAuthor: req.body.author,
-            value: parseFloat(req.body.value),
-            description: req.body.description,
-            updateDate: getDateNow(),
-            date: admin.firestore.Timestamp.fromDate(new Date(req.body.date)),
-        };
-
-        try {
-            const document = db.collection('Purchases').doc(req.params.item_id);
-            await document.update(putPurchase);
-            return res.status(200).send(new RestResponse().ok("updated"));
-        } catch (error) {
-            console.log("Error update /api/purchases/:item_id", error);
-            return res.status(500).send(new RestResponse().serverError("Error al actualizar de la database"));
-        }
-    })();
-});
-
-
-//////////////////// cuentasFijas
-//new item
-app.post('/api/newCuentaFija', (req, res) => {
-    (async () => {
-        var incrementValues = {
-            sign: "zero",
-            value: 0
-        }
-        const dateNow = getDateNow();
-        var newCuentaFija = new CuentaFija(
-            null, // EL id lo define el servidor
-            req.body.name,
-            req.body.description,
-            req.body.value,
-            incrementValues,
-            req.body.dayOfPayment,
-            dateNow,
-            dateNow,
-        );
-        if (req.body.id && req.body.id != "") newCuentaFija.id = req.body.id;
-
-        // var newPagoCuentaFija = new PagoCuentaFija(
-        //     null,
-        //     "idcuentafija",
-        //     req.body.value,
-        //     incrementValues,
-        //     dateNow,
-        //     dateNow,
-        // );
-        try {
-            var newCuentaFijaResponse = await newCuentaFija.create(db);
-            // newPagoCuentaFija.idCuentaFija = newCuentaFijaResponse.id;
-            // await newPagoCuentaFija.create(db);
-            return res.status(200).send(new RestResponse().okMessage("Guardado con exito!"));
-        } catch (err) {
-            console.log("Error /api/newCuentaFija", err);
-            return res.status(500).send(new RestResponse().serverError("Error al guardar"));
-        }
-    })();
-});
 
 // update item
 app.put('/api/cuentasFijas/:item_id', (req, res) => {
@@ -413,67 +149,6 @@ app.put('/api/cuentasFijas/:item_id', (req, res) => {
     })();
 });
 
-// read all items
-app.get('/api/cuentasFijas', (req, res) => {
-    (async () => {
-        try {
-            let query = db.collection('CuentasFijas').orderBy('date', 'desc');
-            let cuentasFijas = [];
-            await query.get().then(data => {
-                let docs = data.docs;
-                docs.forEach(doc => {
-                    var time = doc.data().date;
-                    var date = time.toDate();
-                    var timeUpdate = doc.data().updateDate;
-                    var updateDate = timeUpdate.toDate();
-                    const selectedItem = {
-                        id: doc.id,
-                        name: doc.data().name,
-                        description: doc.data().description,
-                        value: doc.data().value,
-                        increment: doc.data().increment,
-                        dayOfPayment: doc.data().dayOfPayment,
-                        date: date,
-                        updateDate: updateDate,
-                    };
-                    cuentasFijas.push(selectedItem);
-                });
-            });
-            return res.status(200).send(new RestResponse().ok(cuentasFijas));
-        } catch (err) {
-            console.log("Error /api/cuentasFijas", error);
-            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
-        }
-    })();
-});
-
-// read item
-app.get('/api/cuentasFijas/:item_id', (req, res) => {
-    (async () => {
-        try {
-
-            let doc = await CuentaFija.fetch(db, req.params.item_id);
-            var time = doc.data().date;
-            var date = time.toDate();
-            var timeUpdate = doc.data().updateDate;
-            var updateDate = timeUpdate.toDate();
-            const selectedItem = {
-                id: doc.id,
-                name: doc.data().name,
-                description: doc.data().description,
-                value: doc.data().value,
-                increment: doc.data().increment,
-                dayOfPayment: doc.data().dayOfPayment,
-                date: date,
-                updateDate: updateDate,
-            };
-            return res.status(200).send(new RestResponse().ok(selectedItem));
-        } catch (error) {
-            console.log("Error /api/cuentasFijas/:item_id", error);
-            return res.status(500).send(new RestResponse().serverError("Error al leer de la database"));
-        }
-    })();
-});
 
 // delete item
 app.delete('/api/cuentasFijas/:item_id', (req, res) => {
@@ -488,8 +163,6 @@ app.delete('/api/cuentasFijas/:item_id', (req, res) => {
         }
     })();
 });
-
-
 
 
 /////////////////  pagosCuentasFijas
