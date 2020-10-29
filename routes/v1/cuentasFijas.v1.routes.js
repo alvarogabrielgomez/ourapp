@@ -6,7 +6,7 @@ module.exports = function (firebaseInstances) {
     // Purchases
     v1CuentasFijas
         .post('/', CuentasFijasController.create)
-        .get('/currentMonth', CuentasFijasController.getAllCurrentMonth)
+        .get('/', CuentasFijasController.getAll)
         .get('/:item_id', CuentasFijasController.getItem)
         .delete('/:item_id', CuentasFijasController.delete)
         .put('/:item_id', CuentasFijasController.update)

@@ -1,7 +1,7 @@
 module.exports = function (firebaseInstances) {
     var RestResponse = require('../models/RestResponse.model'),
         CuentaFija = require('../models/CuentaFija.model'),
-        ENUM = require('../helpers/enum.helpers')
+        ENUM = require('../helpers/enum.helpers'),
     cuentaFija = new CuentaFija(firebaseInstances.db);
 
     var developmentMode = process.env.NODE_ENV == 'production' ? false : true;
@@ -34,10 +34,10 @@ module.exports = function (firebaseInstances) {
                 return res.status(500).send(new RestResponse().serverError(ENUM.ERROR_SAVING_DATABASE));
             }
         }
-        async getAllCurrentMonth(req, res) {
+        async getAll(req, res) {
             try {
                 let cuentasFijas = [];
-                let query = await cuentaFija.fetchCurrentMonth();
+                let query = await cuentaFija.fetchAll();
                 let docs = query.docs;
                 docs.forEach(doc => {
                     var time = doc.data().date;
@@ -92,7 +92,7 @@ module.exports = function (firebaseInstances) {
         async delete(req, res) {
             try {
                 const document = await cuentasFijas.delete(req.params.item_id);
-                return res.status(200).send(new RestResponse().ok(ENUM.SUCCESS_SAVING_DATABASE));
+                return res.status(200).send(new RestResponse().ok(ENUM.SUCCESS_DELETING_DATABASE));
             } catch (onError) {
                 console.log("Error CuentasFijasController.delete", onError);
                 return res.status(500).send(new RestResponse().serverError(ENUM.ERROR_DELETING_DATABASE));
@@ -102,14 +102,13 @@ module.exports = function (firebaseInstances) {
         async update(req, res) {
             try {
                 const putCuentaFija = {
-                    types: req.body.types,
-                    updateAuthor: req.body.author,
-                    value: parseFloat(req.body.value),
+                    name: req.body.name,
                     description: req.body.description,
-                    updateDate: firebaseInstances.admin.firestore.Timestamp.fromDate(now),
+                    value: parseFloat(req.body.value),
                     date: admin.firestore.Timestamp.fromDate(new Date(req.body.date)),
+                    updateDate: admin.firestore.Timestamp.fromDate(new Date(req.body.date)),
                 };
-                const document = await cuentasFijas.update(putCuentaFija);
+                const document = await cuentasFijas.update(req.params.item_id, putCuentaFija);
                 return res.status(200).send(new RestResponse().ok(ENUM.SUCCESS_UPDATING_DATABASE));
             } catch (onError) {
                 console.log("Error PurchasesController.update", onError);
